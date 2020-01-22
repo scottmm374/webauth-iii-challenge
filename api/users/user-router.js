@@ -3,6 +3,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const userModel = require("./user-model");
 const protected = require("../middleware/protected");
+const secret = require("../../data/secrets");
 
 const router = express.Router();
 
@@ -25,7 +26,14 @@ router.post("/login", async (req, res, next) => {
     const passwordValid = await bcrypt.compare(password, user.password);
 
     if (user && passwordValid) {
-      const token = signToken(user);
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username: user.username
+        },
+        secret.jwt,
+        { expiresIn: "3d" }
+      );
       res.status(200).json({ token, message: `Welcome ${user.username}` });
     } else {
       res.status(401).json({ message: "invalid credentials" });
@@ -46,19 +54,21 @@ router.get("/users", protected(), async (req, res, next) => {
   }
 });
 
-function signToken(user) {
-  const payload = {
-    id: user.id,
-    username: user.username
-  };
+// Keep fpr later reference/ alternate way of doing this.
 
-  const secret = process.env.JWT_SECRET || "Something something, funny funny";
+// function signToken(user) {
+//   const payload = {
+//     id: user.id,
+//     username: user.username
+//   };
 
-  const options = {
-    expiresIn: "48hr"
-  };
+//   const secret = process.env.JWT_SECRET || "Something something, funny funny";
 
-  return jwt.sign(payload, secret, options);
-}
+//   const options = {
+//     expiresIn: "48hr"
+//   };
+
+//   return jwt.sign(payload, secret, options);
+// }
 
 module.exports = router;

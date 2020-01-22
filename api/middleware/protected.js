@@ -1,17 +1,15 @@
 const jwt = require("jsonwebtoken");
+const secret = require("../../data/secrets");
 
 module.exports = () => {
   return (req, res, next) => {
     try {
       const token = req.headers.authorization;
-      const secret =
-        process.env.JWT_SECRET || "Something something, funny funny";
-      const decoded = jwt.verify(token, secrets.jwt);
-
-      // what is subject? decoded.subject missing some stuff here, need to look into it.
-      req.userId = decoded.subject;
+      const decoded = jwt.verify(token, secret.jwt);
+      req.users = decoded.id;
       next();
     } catch (err) {
+      console.log(err, "MW");
       return res.status(401).json({ message: "Invalid" });
     }
   };
