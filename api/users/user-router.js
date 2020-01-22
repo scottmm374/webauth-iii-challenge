@@ -1,12 +1,15 @@
-const bcrypt = requires("bcrypt");
+const bcrypt = require("bcryptjs");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const userModel = require("./user-model");
+const protected = require("../middleware/protected");
 
 const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
   try {
     const user = await userModel.add(req.body);
+
     res.status(201).json(user);
   } catch (err) {
     console.log("err-reg", err);
@@ -23,7 +26,7 @@ router.post("/login", async (req, res, next) => {
 
     if (user && passwordValid) {
       const token = signToken(user);
-      res.status(200).json({ token, user });
+      res.status(200).json({ token, message: `Welcome ${user.username}` });
     } else {
       res.status(401).json({ message: "invalid credentials" });
     }
@@ -49,7 +52,7 @@ function signToken(user) {
     username: user.username
   };
 
-  const secret = process.env.JWT_SECRET || "SOmething something, funny funny";
+  const secret = process.env.JWT_SECRET || "Something something, funny funny";
 
   const options = {
     expiresIn: "48hr"
@@ -57,3 +60,5 @@ function signToken(user) {
 
   return jwt.sign(payload, secret, options);
 }
+
+module.exports = router;
