@@ -36,7 +36,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.get("/users", async (req, res, next) => {
+router.get("/users", protected(), async (req, res, next) => {
   try {
     const users = await userModel.find();
     res.json(users);
